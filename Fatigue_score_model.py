@@ -1,10 +1,15 @@
 import os
 import pandas as pd
+import duckdb as db
+
+conn = db.connect("My_database.duckdb")
 if os.path.exists("bedtime_screentime_sleep_debt.csv"):
   # The target from my model will be next_day_fatigue_score-
     print("File Available")
-    bssd_df = pd.read_csv("bedtime_screentime_sleep_debt.csv")
+    bssd_df = conn.sql("""select age,gender,occupation_type,chronotype,bedtime_phone_minutes,primary_bedtime_app,screen_brightness_pct,blue_light_filter_active,caffeine_post_5pm_mg,physical_activity_min,sleep_latency_min,total_sleep_hours,deep_sleep_pct,rem_sleep_pct,morning_alarm_snoozes,next_day_fatigue_score,sleep_debt_category from 'bedtime_screentime_sleep_debt.csv'""").df()
+    non_binary_sex = conn.sql(
+        """select * from'bedtime_screentime_sleep_debt.csv' where gender not in ('Male','Female')""").df()
     print(bssd_df.isnull().sum())
-    print(bssd_df.dtype)
+    print(non_binary_sex.count())
 else:
     print("File unavailable")
